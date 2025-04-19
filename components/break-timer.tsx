@@ -5,7 +5,7 @@ import { useTaskContext } from "@/context/task-context"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Coffee, SkipForward } from "lucide-react"
+import { Coffee, SkipForward } from 'lucide-react'
 
 interface BreakTimerProps {
   onBreakComplete: () => void
@@ -76,7 +76,6 @@ export function BreakTimer({ onBreakComplete, onExit }: BreakTimerProps) {
               variant="default"
               className="w-full h-10"
               onClick={onBreakComplete}
-              disabled={timeRemaining > 0 && !isPaused}
             >
               <SkipForward className="mr-2 h-4 w-4" />
               {timeRemaining > 0 ? "跳过休息" : "继续"}
@@ -93,3 +92,4 @@ export function BreakTimer({ onBreakComplete, onExit }: BreakTimerProps) {
     </div>
   )
 }
+

@@ -37,7 +37,16 @@ export function TaskScheduler() {
         )}
 
         {activeView === "active" && (
-          <ActiveTaskView onTaskComplete={() => setActiveView("break")} onExit={() => setActiveView("setup")} />
+          <ActiveTaskView
+            onTaskComplete={(hasMoreTasks) => {
+              if (hasMoreTasks) {
+                setActiveView("break")
+              } else {
+                setActiveView("setup")
+              }
+            }}
+            onExit={() => setActiveView("setup")}
+          />
         )}
 
         {activeView === "break" && (

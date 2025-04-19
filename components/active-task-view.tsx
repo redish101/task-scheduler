@@ -9,7 +9,7 @@ import { Clock, CheckCircle, XCircle } from "lucide-react"
 import { formatTime } from "@/lib/utils"
 
 interface ActiveTaskViewProps {
-  onTaskComplete: () => void
+  onTaskComplete: (hasMoreTasks: boolean) => void
   onExit: () => void
 }
 
@@ -52,8 +52,8 @@ export function ActiveTaskView({ onTaskComplete, onExit }: ActiveTaskViewProps) 
     if (!currentTask) return
     // 将秒转换为分钟，向上取整
     const timeElapsedMinutes = Math.ceil(timeElapsedSeconds / 60)
-    completeCurrentTask(timeElapsedMinutes)
-    onTaskComplete()
+    const hasMoreTasks = completeCurrentTask(timeElapsedMinutes)
+    onTaskComplete(hasMoreTasks)
   }
 
   if (!currentTask) {

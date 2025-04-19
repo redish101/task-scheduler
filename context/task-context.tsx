@@ -13,8 +13,8 @@ interface TaskContextType {
   isScheduleGenerated: boolean
   addTask: (task: Task) => void
   removeTask: (id: string) => void
-  toggleTaskCompletion: (id: string) => void // 新增切换任务完成状态的方法
-  clearAllTasks: () => void // 新增清除所有任务的方法
+  toggleTaskCompletion: (id: string) => void
+  clearAllTasks: () => void
   generateSchedule: () => void
   completeCurrentTask: (actualMinutes: number) => void
   updateSettings: (newSettings: Settings) => void
@@ -270,15 +270,20 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       const estimatedMinutes = task.estimatedMinutes
       const difficultyFactor = 1 + ((task.difficulty - 1) / 4) * settings.breaks.difficultyMultiplier
 
-      // 计算超时因子（比预计时间长多少）
-      const overrunFactor =
-        actualMinutes > estimatedMinutes
-          ? 1 + ((actualMinutes - estimatedMinutes) / estimatedMinutes) * settings.breaks.overrunMultiplier
-          : 1
+      // 计算效率因子（实际时间与预计时间的比例）
+      let efficiencyFactor = 1.0
+      if (actualMinutes < estimatedMinutes) {
+        // 提前完成，减少休息时间
+        efficiencyFactor = Math.max(0.5, actualMinutes / estimatedMinutes)
+      } else if (actualMinutes > estimatedMinutes) {
+        // 超时完成，增加休息时间
+        efficiencyFactor =
+          1 + ((actualMinutes - estimatedMinutes) / estimatedMinutes) * settings.breaks.overrunMultiplier
+      }
 
       // 计算休息时间（以秒为单位）
       let calculatedBreakDuration = Math.round(
-        settings.breaks.baseBreakDuration * difficultyFactor * overrunFactor * 60,
+        settings.breaks.baseBreakDuration * difficultyFactor * efficiencyFactor * 60,
       )
 
       // 限制最大休息时间
@@ -289,8 +294,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       // 移至下一个任务
       setCurrentTaskIndex((prev) => prev + 1)
 
+      // 检查是否还有未完成的任务
+      const hasMoreTasks = currentTaskIndex < schedule.length - 1
+
+      // 如果没有更多任务，直接返回到设置界面
+      if (!hasMoreTasks) {
+        return false
+      }
+
       // 如果启用了自适应调度，调整剩余任务的时间安排
-      if (settings.scheduling.adaptiveScheduling && currentTaskIndex < schedule.length - 1) {
+      if (settings.scheduling.adaptiveScheduling && hasMoreTasks) {
         const timeOverrun = actualMinutes - estimatedMinutes
 
         if (timeOverrun > 0) {
@@ -308,6 +321,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
           setSchedule(adjustedSchedule)
         }
       }
+
+      return true // 返回true表示还有更多任务
     },
     [currentTaskIndex, schedule, settings],
   )
