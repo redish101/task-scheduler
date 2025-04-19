@@ -15,15 +15,18 @@ interface ActiveTaskViewProps {
 
 export function ActiveTaskView({ onTaskComplete, onExit }: ActiveTaskViewProps) {
   const { currentTask, completeCurrentTask } = useTaskContext()
-  const [timeElapsed, setTimeElapsed] = useState(0)
+  const [timeElapsedSeconds, setTimeElapsedSeconds] = useState(0)
+  const [currentDateTime, setCurrentDateTime] = useState(new Date())
   const [isFullscreen, setIsFullscreen] = useState(false)
 
+  // 每秒更新时间和当前时间
   useEffect(() => {
     if (!currentTask) return
 
     const interval = setInterval(() => {
-      setTimeElapsed((prev) => prev + 1)
-    }, 60000) // 每分钟更新一次
+      setTimeElapsedSeconds((prev) => prev + 1)
+      setCurrentDateTime(new Date())
+    }, 1000) // 每秒更新一次
 
     return () => clearInterval(interval)
   }, [currentTask])
@@ -47,7 +50,9 @@ export function ActiveTaskView({ onTaskComplete, onExit }: ActiveTaskViewProps) 
 
   const handleCompleteTask = () => {
     if (!currentTask) return
-    completeCurrentTask(timeElapsed)
+    // 将秒转换为分钟，向上取整
+    const timeElapsedMinutes = Math.ceil(timeElapsedSeconds / 60)
+    completeCurrentTask(timeElapsedMinutes)
     onTaskComplete()
   }
 
@@ -61,16 +66,23 @@ export function ActiveTaskView({ onTaskComplete, onExit }: ActiveTaskViewProps) 
     )
   }
 
-  const progress = Math.min(100, (timeElapsed / currentTask.task.estimatedMinutes) * 100)
-  const currentTime = new Date()
+  // 计算进度百分比 (秒 -> 分钟的转换)
+  const progress = Math.min(100, (timeElapsedSeconds / (currentTask.task.estimatedMinutes * 60)) * 100)
+
+  // 格式化已用时间为分钟:秒
+  const formatElapsedTime = () => {
+    const minutes = Math.floor(timeElapsedSeconds / 60)
+    const seconds = timeElapsedSeconds % 60
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`
+  }
 
   return (
     <div className={`min-h-[80vh] flex flex-col justify-center items-center ${isFullscreen ? "bg-background" : ""}`}>
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
-          <div className="text-6xl font-bold mb-2">{formatTime(currentTime)}</div>
+          <div className="text-6xl font-bold mb-2">{formatTime(currentDateTime)}</div>
           <div className="text-xl text-muted-foreground">
-            {currentTime.toLocaleDateString("zh-CN", {
+            {currentDateTime.toLocaleDateString("zh-CN", {
               weekday: "long",
               year: "numeric",
               month: "long",
@@ -90,7 +102,7 @@ export function ActiveTaskView({ onTaskComplete, onExit }: ActiveTaskViewProps) 
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
-                <span>已用时间: {timeElapsed} 分钟</span>
+                <span>已用时间: {formatElapsedTime()}</span>
                 <span>学科: {getDisciplineName(currentTask.task.discipline)}</span>
               </div>
               <Progress value={progress} className="h-2" />
@@ -108,20 +120,18 @@ export function ActiveTaskView({ onTaskComplete, onExit }: ActiveTaskViewProps) 
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={toggleFullscreen}>
+          <CardFooter className="space-y-2">
+            <Button onClick={handleCompleteTask} className="w-full">
+              <CheckCircle className="mr-2 h-4 w-4" />
+              完成任务
+            </Button>
+            <Button variant="outline" onClick={toggleFullscreen} className="w-full">
               {isFullscreen ? "退出全屏" : "进入全屏"}
             </Button>
-            <div className="space-x-2">
-              <Button variant="destructive" onClick={onExit}>
-                <XCircle className="mr-2 h-4 w-4" />
-                退出
-              </Button>
-              <Button onClick={handleCompleteTask}>
-                <CheckCircle className="mr-2 h-4 w-4" />
-                完成任务
-              </Button>
-            </div>
+            <Button variant="destructive" onClick={onExit} className="w-full">
+              <XCircle className="mr-2 h-4 w-4" />
+              退出
+            </Button>
           </CardFooter>
         </Card>
       </div>
