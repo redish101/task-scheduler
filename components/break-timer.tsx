@@ -71,25 +71,22 @@ export function BreakTimer({ onBreakComplete, onExit }: BreakTimerProps) {
               <p className="text-sm">此休息时间是根据您上一个任务的难度和完成所花费的时间计算的。</p>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" size="default" className="h-10" onClick={() => setIsPaused(!isPaused)}>
+          <CardFooter className="flex flex-col gap-2">
+            <Button
+              variant="default"
+              className="w-full h-10"
+              onClick={onBreakComplete}
+              disabled={timeRemaining > 0 && !isPaused}
+            >
+              <SkipForward className="mr-2 h-4 w-4" />
+              {timeRemaining > 0 ? "跳过休息" : "继续"}
+            </Button>
+            <Button variant="outline" className="w-full h-10" onClick={() => setIsPaused(!isPaused)}>
               {isPaused ? "继续" : "暂停"}
             </Button>
-            <div className="space-x-2">
-              <Button variant="outline" size="default" className="h-10" onClick={onExit}>
-                退出
-              </Button>
-              <Button
-                variant="default"
-                size="default"
-                className="h-10"
-                onClick={onBreakComplete}
-                disabled={timeRemaining > 0 && !isPaused}
-              >
-                <SkipForward className="mr-2 h-4 w-4" />
-                {timeRemaining > 0 ? "跳过休息" : "继续"}
-              </Button>
-            </div>
+            <Button variant="outline" className="w-full h-10" onClick={onExit}>
+              退出
+            </Button>
           </CardFooter>
         </Card>
       </div>

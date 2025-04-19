@@ -120,7 +120,7 @@ export function ActiveTaskView({ onTaskComplete, onExit }: ActiveTaskViewProps) 
               </div>
             </div>
           </CardContent>
-          <CardFooter className="space-y-2">
+          <CardFooter className="flex flex-col gap-2">
             <Button onClick={handleCompleteTask} className="w-full">
               <CheckCircle className="mr-2 h-4 w-4" />
               完成任务
